@@ -1,57 +1,6 @@
-const GH_CLIENT_ID ='d04eb4a4f1b93c8356b2';
+extends layout
 
-const GH_CLIENT_SECRET = '7728ac6d9b7a0ffa3c54ed5a494c5df2fd535eda';
-
-const GH_CALLBACK = 'http://3000.fta005e7620d0d0e8b.applinzi.com/users/ghcallback';
-
-require('url-search-params-polyfill');
-const axios = require('axios');
-const querystring = require('querystring');
-
-var express = require('express');
-var router = express.Router();
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-
-router.get('/login', function(req, res, next) {
-  const url = 'https://github.com/login/oauth/authorize'
-  + '?client_id=' + encodeURIComponent( GH_CLIENT_ID )
-  + '&redirect_uri=' + encodeURIComponent( GH_CALLBACK );
-  
-  res.render( 'login' , {url}  );
-});
-
-router.get('/ghcallback',async (req,res)=>
-{
-  if( !req.query.code ) res.status(500).send('bad code!');
-  
-  console.log("in callback");
-  
-  let params = new URLSearchParams();
-  params.append( "client_id" , GH_CLIENT_ID );
-  params.append( "client_secret" , GH_CLIENT_SECRET );
-  params.append( "code" , req.query.code );
-  params.append( "redirect_uri" , GH_CALLBACK );
-  
-  const {data} = await axios.post( 'https://github.com/login/oauth/access_token', params);
-  if( data )
-  {
-    const acode = querystring.parse(data).access_token;
-    const user = await axios.get( 'https://api.github.com/user?access_token=',
-    {
-      headers:
-      {
-        Authorization: 'Bearer '+acode
-      }
-    });
-    console.log("got user info",user.data);
-    
-    res.json(user.data);
-    res.end();
-  }
-});
-
-module.exports = router;
+block content
+  h1 login
+  p
+    a(href=url) Login with Github
